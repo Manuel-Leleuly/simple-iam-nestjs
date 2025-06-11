@@ -57,8 +57,8 @@ export const GetUserListQuerySchema = z.object({
   firstName: z.string().nullish(),
   lastName: z.string().nullish(),
   email: z.string().email().nullish(),
-  offset: z.number().nullish(),
-  limit: z.number().nullish(),
+  offset: z.number().positive().nullish(),
+  limit: z.number().positive().nullish(),
 });
 
 export class GetUserListQueryDto extends createZodDto(GetUserListQuerySchema) {}

@@ -1,0 +1,5 @@
+export const globalVar = {
+  NODE_ENV: 'NODE_ENV',
+  CLIENT_SECRET: 'CLIENT_SECRET',
+  DATABASE_URL: 'DATABASE_URL',
+};

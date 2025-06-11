@@ -11,9 +11,11 @@ import {
   Post,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiBody,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
@@ -21,8 +23,10 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiQuery,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Request } from 'express';
+import { AuthGuard } from 'src/auth/auth.guard';
 import { PaginationHelper } from 'src/helpers/pagination';
 import { UrlHelpers } from 'src/helpers/url';
 import { ErrorMessage, ValidationErrorMessage } from 'src/models/error';
@@ -73,6 +77,8 @@ export class UserController {
     };
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -88,6 +94,10 @@ export class UserController {
   @ApiOkResponse({
     description: 'Successfully get all users',
     type: WithPagination(UserResponseDto),
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Unauthorized',
+    type: ErrorMessage,
   })
   @ApiBadRequestResponse({
     description: 'Bad request',
@@ -122,6 +132,8 @@ export class UserController {
     };
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
   @Get(':userId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -132,6 +144,10 @@ export class UserController {
   @ApiOkResponse({
     description: 'Successfully get user detail',
     type: WithResponse(UserResponseDto),
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Unauthorized',
+    type: ErrorMessage,
   })
   @ApiNotFoundResponse({
     description: 'User does not exist',
@@ -151,6 +167,8 @@ export class UserController {
     };
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
   @Patch(':userId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -162,6 +180,10 @@ export class UserController {
   @ApiOkResponse({
     description: 'Update user successful',
     type: WithResponse(UserResponseDto),
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Unauthorized',
+    type: ErrorMessage,
   })
   @ApiNotFoundResponse({
     description: 'User not found',
@@ -186,6 +208,8 @@ export class UserController {
     };
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
   @Delete(':userId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -196,6 +220,10 @@ export class UserController {
   @ApiOkResponse({
     description: 'Delete user successful',
     type: DeleteUserDto,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Unauthorized',
+    type: ErrorMessage,
   })
   @ApiNotFoundResponse({
     description: 'User not found',

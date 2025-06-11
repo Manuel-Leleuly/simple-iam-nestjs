@@ -26,7 +26,7 @@ async function bootstrap() {
       'https://www.apache.org/licenses/LICENSE-2.0.html',
     )
     .setBasePath('/iam')
-    .addSecurity('apikey', {
+    .addSecurity('bearer', {
       type: 'apiKey',
       in: 'header',
       name: 'Authorization',

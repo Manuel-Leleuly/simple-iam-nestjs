@@ -2,11 +2,18 @@ import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import * as moment from 'moment';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/common/prisma.service';
 import { ValidationService } from 'src/common/validation.service';
+import { TOKEN_EXPIRY_SECONDS } from 'src/constants/constants';
 import { globalVar } from 'src/constants/env';
-import { AuthResponseDto, SignInDto, SignInSchema } from 'src/models/auth';
+import {
+  AuthResponseDto,
+  SignInDto,
+  SignInSchema,
+  TokenPayloadDto,
+} from 'src/models/auth';
 import { Logger } from 'winston';
 
 @Injectable()
@@ -52,15 +59,15 @@ export class AuthService {
       );
     }
 
-    const accessToken = await this.jwtService.signAsync(
-      {
-        sub: user.id,
-        email: user.email,
-      },
-      {
-        secret: this.configService.get<string>(globalVar.CLIENT_SECRET),
-      },
-    );
+    const payload: Omit<TokenPayloadDto, 'iat'> = {
+      id: user.id,
+      email: user.email,
+      exp: moment().add(TOKEN_EXPIRY_SECONDS, 'seconds').unix(),
+    };
+
+    const accessToken = await this.jwtService.signAsync(payload, {
+      secret: this.configService.get<string>(globalVar.CLIENT_SECRET),
+    });
 
     return {
       access_token: accessToken,

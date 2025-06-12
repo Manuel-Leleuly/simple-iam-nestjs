@@ -9,7 +9,6 @@ import { AuthService } from './auth.service';
       global: true,
       signOptions: {
         algorithm: 'HS256',
-        expiresIn: '3600s',
       },
     }),
   ],

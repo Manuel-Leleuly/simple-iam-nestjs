@@ -1,16 +1,21 @@
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   CanActivate,
   ExecutionContext,
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { Cache } from 'cache-manager';
+import { User } from 'generated/prisma';
 import * as moment from 'moment';
-import { PrismaService } from 'src/common/prisma.service';
+import { CACHE_KEYS } from 'src/constants/constants';
 import { globalVar } from 'src/constants/env';
-import { TokenPayloadSchema } from 'src/models/auth';
+import { AccessTokenPayloadSchema } from 'src/models/auth';
+import { PrismaService } from 'src/modules/common/prisma.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -18,6 +23,7 @@ export class AuthGuard implements CanActivate {
     private jwtService: JwtService,
     private configService: ConfigService,
     private prismaService: PrismaService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -33,13 +39,14 @@ export class AuthGuard implements CanActivate {
     try {
       payload = await this.jwtService.verifyAsync(token, {
         secret: this.configService.get<string>(globalVar.CLIENT_SECRET),
+        ignoreExpiration: true,
       });
     } catch {
       throw500Error();
     }
 
     const { success, data: payloadData } =
-      TokenPayloadSchema.safeParse(payload);
+      AccessTokenPayloadSchema.safeParse(payload);
     if (!success) throw500Error();
 
     const { exp, email, id } = payloadData!;
@@ -47,11 +54,21 @@ export class AuthGuard implements CanActivate {
       throw500Error('Token has expired');
     }
 
-    // TODO: find a way to store this locally
-    const user = await this.prismaService.user.findFirst({
-      where: { email, id },
-    });
+    // check user from cache first before checking it from database
+    let user: User | null =
+      (await this.cacheManager.get<User>(
+        `${CACHE_KEYS.LOGGED_IN_USER}-${id}`,
+      )) ?? null;
+
+    if (!user) {
+      user = await this.prismaService.user.findFirst({
+        where: { email, id },
+      });
+    }
     if (!user) throw500Error();
+    else {
+      await this.cacheManager.set(`${CACHE_KEYS.LOGGED_IN_USER}-${id}`, user);
+    }
 
     return true;
   }

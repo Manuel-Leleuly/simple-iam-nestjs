@@ -26,7 +26,6 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Request } from 'express';
-import { AuthGuard } from 'src/auth/auth.guard';
 import { PaginationHelper } from 'src/helpers/pagination';
 import { UrlHelpers } from 'src/helpers/url';
 import { ErrorMessage, ValidationErrorMessage } from 'src/models/error';
@@ -42,6 +41,7 @@ import {
   UserResponseDto,
   UserUpdateDto,
 } from 'src/models/user';
+import { AuthGuard } from 'src/modules/auth/auth.guard';
 import { UserService } from './user.service';
 
 @Controller('/v1/users')

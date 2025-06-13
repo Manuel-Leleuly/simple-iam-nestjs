@@ -1,8 +1,6 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { PrismaService } from 'src/common/prisma.service';
-import { ValidationService } from 'src/common/validation.service';
 import {
   GetUserListQueryDto,
   GetUserListQuerySchema,
@@ -12,6 +10,8 @@ import {
   UserUpdateDto,
   UserUpdateSchema,
 } from 'src/models/user';
+import { PrismaService } from 'src/modules/common/prisma.service';
+import { ValidationService } from 'src/modules/common/validation.service';
 import { v4 as uuidV4 } from 'uuid';
 import { Logger } from 'winston';
 
